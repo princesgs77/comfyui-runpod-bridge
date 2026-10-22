@@ -33,6 +33,13 @@ MODEL_LOADER_REGISTRY: Dict[str, Tuple[str, Tuple[str, ...]]] = {
     "DiffusersLoader": ("diffusion_models", ("model_path",)),
     "GLIGENLoader": ("gligen", ("gligen_name",)),
     "IPAdapterModelLoader": ("ipadapter", ("ipadapter_file",)),
+    "ImageOnlyCheckpointLoader": ("checkpoints", ("ckpt_name",)),
+    "CLIPVisionLoader": ("clip_vision", ("clip_name",)),
+    "StyleModelLoader": ("style_models", ("style_model_name",)),
+    "AnimateDiffLoaderWithContext": ("animatediff_models", ("model_name",)),
+    "ADE_AnimateDiffLoaderWithContext": ("animatediff_models", ("model_name",)),
+    "AnimateDiffLoader": ("animatediff_models", ("model_name",)),
+    "AnimateDiffLoRALoader": ("animatediff_motion_lora", ("lora_name",)),
 }
 
 

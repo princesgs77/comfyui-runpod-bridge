@@ -25,6 +25,8 @@ CANONICAL_CATEGORY_DIRS: Dict[str, str] = {
     "clip_vision": "models/clip_vision",
     "style_models": "models/style_models",
     "photomaker": "models/photomaker",
+    "animatediff_models": "models/animatediff_models",
+    "animatediff_motion_lora": "models/animatediff_motion_lora",
 }
 
 SAFE_FILENAME_PATTERN = re.compile(r"^[a-zA-Z0-9_\-\.][a-zA-Z0-9_\-\. ]*\.(safetensors|ckpt|pt|bin|pth|sft|onnx|yaml|json|txt)$", re.IGNORECASE)

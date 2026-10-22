@@ -415,6 +415,18 @@ app.post("/upload/image", (req, res) => {
   });
 });
 
+// Helper: Determine MIME type by extension or format
+function getMimeType(filename, format) {
+  if (format === "video") return "video/mp4";
+  const ext = path.extname(filename || "").toLowerCase();
+  if (ext === ".mp4") return "video/mp4";
+  if (ext === ".webm") return "video/webm";
+  if (ext === ".gif") return "image/gif";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  return "image/png";
+}
+
 // GET /view - Serve generated output image or video
 app.get("/view", (req, res) => {
   const filename = req.query.filename;
@@ -424,6 +436,9 @@ app.get("/view", (req, res) => {
 
   const cached = imageCache.get(filename);
   if (cached) {
+    if (cached.s3Url) {
+      return res.redirect(cached.s3Url);
+    }
     res.setHeader("Content-Type", cached.mimeType || "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
     return res.send(cached.buffer);
@@ -545,11 +560,24 @@ async function pollRunpodJob(jobId, promptId, clientId) {
           });
 
           if (img.data) {
-            imageCache.set(fname, {
-              buffer: Buffer.from(img.data, "base64"),
-              mimeType: img.format === "video" ? "video/mp4" : "image/png",
-              createdAt: Date.now(),
-            });
+            const mimeType = getMimeType(fname, img.format);
+            if (typeof img.data === "string" && (img.data.startsWith("http://") || img.data.startsWith("https://"))) {
+              imageCache.set(fname, {
+                s3Url: img.data,
+                mimeType,
+                createdAt: Date.now(),
+              });
+            } else {
+              let b64 = img.data;
+              if (typeof b64 === "string" && b64.includes(",")) {
+                b64 = b64.split(",")[1];
+              }
+              imageCache.set(fname, {
+                buffer: Buffer.from(b64, "base64"),
+                mimeType,
+                createdAt: Date.now(),
+              });
+            }
           }
         }
 
