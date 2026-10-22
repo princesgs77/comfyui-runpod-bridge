@@ -3,106 +3,469 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ComfyUI Remote</title>
+  <title>ComfyUI Remote — Render + RunPod Bridge</title>
   <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-bright: #f0f6fc;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+    }
+    * { box-sizing: border-box; }
     body {
-      max-width: 760px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #171717;
-      color: #f5f5f5;
-      font: 16px system-ui;
+      max-width: 960px;
+      margin: 30px auto;
+      padding: 0 20px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
     }
-    input, button {
-      margin: 10px 0;
-      padding: 12px;
+    h1, h2, h3 { color: var(--text-bright); margin-top: 0; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
     }
-    input { max-width: 100%; }
-    button { cursor: pointer; }
-    pre {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      background: #252525;
-      padding: 16px;
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      background: #21262d;
+      border: 1px solid var(--border);
+    }
+    .badge-ok { color: var(--success); border-color: rgba(63,185,80,0.4); }
+    .badge-warn { color: var(--warning); border-color: rgba(210,153,34,0.4); }
+    .badge-err { color: var(--danger); border-color: rgba(248,81,73,0.4); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-bright);
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0d1117;
+      color: var(--text-bright);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(88,166,255,0.2);
+    }
+    button {
+      background: #238636;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #2ea043; }
+    button.btn-sec {
+      background: #21262d;
+      color: var(--text-bright);
+      border: 1px solid var(--border);
+    }
+    button.btn-sec:hover { background: #30363d; }
+    button.btn-danger {
+      background: #da3633;
+    }
+    button.btn-danger:hover { background: #b62324; }
+
+    pre {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      max-height: 280px;
+      color: #7ee787;
+    }
+    .model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    .model-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+    .gallery img, .gallery video {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #000;
     }
   </style>
 </head>
 <body>
-  <h1>ComfyUI Remote</h1>
-  <p>Submit a workflow to your RunPod Serverless endpoint.</p>
+  <div class="header">
+    <div>
+      <h1>ComfyUI Remote</h1>
+      <p style="margin:0; font-size:14px; color:#8b949e;">Render Bridge + RunPod Serverless + Google Drive Model Cache</p>
+    </div>
+    <div id="status-badges">
+      <span id="bridge-badge" class="badge">Bridge: Checking...</span>
+      <span id="runpod-badge" class="badge">RunPod: Checking...</span>
+    </div>
+  </div>
 
-  <label>
-    Bridge access token
-    <input id="token" type="password" autocomplete="off">
-  </label>
-  <br>
-  <input id="workflow" type="file" accept=".json">
-  <br>
-  <button id="run">Submit workflow</button>
-  <button id="check">Check job status</button>
-  <pre id="result">Ready</pre>
+  <div class="grid">
+    <!-- Left Column: Controls & Auth -->
+    <div>
+      <div class="card">
+        <h3>1. Authentication & Health</h3>
+        <label>Bridge Access Token</label>
+        <input id="token" type="password" placeholder="Enter APP_ACCESS_TOKEN" autocomplete="off">
+        <button id="btn-health" class="btn-sec">Check Connection & Health</button>
+      </div>
+
+      <div class="card">
+        <h3>2. Allowlisted Model Manifest</h3>
+        <p style="font-size:12px; color:#8b949e; margin-top:-5px;">Models stored in Google Drive & cached on worker disk</p>
+        <div id="model-container" class="model-list">
+          <div style="font-size:12px; color:#8b949e;">Click 'Check Connection' to load manifest...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Submission -->
+    <div>
+      <div class="card">
+        <h3>3. Submit Workflow</h3>
+        <label>Workflow API JSON File</label>
+        <input id="workflow-file" type="file" accept=".json">
+
+        <div style="display:flex; gap:10px;">
+          <button id="btn-submit">Submit Workflow</button>
+          <button id="btn-cancel" class="btn-danger" style="display:none;">Cancel Job</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <label>Active Job ID</label>
+          <input id="active-job-id" type="text" placeholder="No job submitted yet" readonly>
+          <button id="btn-poll" class="btn-sec">Manual Poll Status</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Log & Gallery -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0;">4. Execution Status & Outputs</h3>
+      <span id="ws-indicator" style="font-size:12px; color:#8b949e;">WebSocket: Disconnected</span>
+    </div>
+    <pre id="log-output">Ready. Select a workflow JSON file and click 'Submit Workflow'.</pre>
+
+    <div id="gallery" class="gallery"></div>
+  </div>
 
   <script>
-    let jobId = "";
-    const result = document.getElementById("result");
+    let activeJobId = "";
+    let activePromptId = "";
+    let pollInterval = null;
+    let ws = null;
 
-    function headers() {
-      return {
-        Authorization:
-          "Bearer " + document.getElementById("token").value,
-        "Content-Type": "application/json"
-      };
+    const logEl = document.getElementById("log-output");
+    const tokenEl = document.getElementById("token");
+    const jobIdEl = document.getElementById("active-job-id");
+    const bridgeBadge = document.getElementById("bridge-badge");
+    const runpodBadge = document.getElementById("runpod-badge");
+    const wsIndicator = document.getElementById("ws-indicator");
+    const galleryEl = document.getElementById("gallery");
+
+    function log(msg) {
+      if (typeof msg === "object") {
+        logEl.textContent = JSON.stringify(msg, null, 2);
+      } else {
+        logEl.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      }
     }
 
-    async function request(url, options = {}) {
-      const response = await fetch(url, {
-        ...options,
-        headers: { ...headers(), ...options.headers }
+    function getHeaders() {
+      const h = { "Content-Type": "application/json" };
+      const tok = tokenEl.value.trim();
+      if (tok) h["Authorization"] = `Bearer ${tok}`;
+      return h;
+    }
+
+    async function apiRequest(url, opts = {}) {
+      const resp = await fetch(url, {
+        ...opts,
+        headers: { ...getHeaders(), ...opts.headers },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data));
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(data.error?.message || data.error || `HTTP ${resp.status}`);
       }
-
       return data;
     }
 
-    document.getElementById("run").onclick = async () => {
+    // Connect WebSocket
+    function connectWs() {
+      if (ws) ws.close();
+      const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const token = tokenEl.value.trim();
+      const wsUrl = `${proto}//${window.location.host}/ws?clientId=browser_${Date.now()}&token=${encodeURIComponent(token)}`;
+
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        wsIndicator.textContent = "WebSocket: Connected (Ready)";
+        wsIndicator.style.color = "var(--success)";
+      };
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          handleWsEvent(msg);
+        } catch (_) {}
+      };
+      ws.onclose = () => {
+        wsIndicator.textContent = "WebSocket: Disconnected";
+        wsIndicator.style.color = "var(--text)";
+      };
+    }
+
+    function handleWsEvent(msg) {
+      if (msg.type === "execution_start") {
+        log(`ComfyUI Execution Started (Prompt: ${msg.data.prompt_id})`);
+      } else if (msg.type === "executing") {
+        if (msg.data.node) {
+          log(`Executing node: ${msg.data.node}...`);
+        }
+      } else if (msg.type === "executed") {
+        log("Workflow completed! Retrieving outputs...");
+        renderOutputs(msg.data.output);
+      } else if (msg.type === "execution_error") {
+        log(`Execution Error: ${msg.data.exception_message}`);
+      }
+    }
+
+    // 1. Health Check
+    async function checkHealth() {
       try {
-        const file = document.getElementById("workflow").files[0];
-        if (!file) throw new Error("Select an API workflow JSON file.");
+        const h = await apiRequest("/api/health");
+        bridgeBadge.textContent = "Bridge: OK";
+        bridgeBadge.className = "badge badge-ok";
 
-        const workflow = JSON.parse(await file.text());
-        result.textContent = "Submitting...";
+        if (h.runpod?.status === "unconfigured") {
+          runpodBadge.textContent = "RunPod: Unconfigured";
+          runpodBadge.className = "badge badge-warn";
+        } else if (h.runpod?.workers) {
+          const active = h.runpod.workers.active || 0;
+          const idle = h.runpod.workers.idle || 0;
+          runpodBadge.textContent = `RunPod: Online (${active} active, ${idle} idle)`;
+          runpodBadge.className = "badge badge-ok";
+        } else {
+          runpodBadge.textContent = "RunPod: OK";
+          runpodBadge.className = "badge badge-ok";
+        }
 
-        const data = await request("/api/run", {
+        loadManifest();
+        connectWs();
+      } catch (err) {
+        bridgeBadge.textContent = "Bridge: Error";
+        bridgeBadge.className = "badge badge-err";
+        runpodBadge.textContent = "RunPod: Unreachable";
+        runpodBadge.className = "badge badge-err";
+        log(`Health check error: ${err.message}`);
+      }
+    }
+
+    // 2. Load Manifest
+    async function loadManifest() {
+      const container = document.getElementById("model-container");
+      try {
+        const data = await apiRequest("/api/manifest");
+        container.innerHTML = "";
+        for (const m of data.models || []) {
+          const el = document.createElement("div");
+          el.className = "model-item";
+          const sizeMb = m.file_size ? `${(m.file_size / (1024 * 1024)).toFixed(0)} MB` : "variable";
+          el.innerHTML = `
+            <div>
+              <strong>${m.filename}</strong>
+              <div style="font-size:11px; color:#8b949e;">${m.category} • ${sizeMb}</div>
+            </div>
+            <span class="badge" style="font-size:10px;">${m.has_checksum ? "SHA-256 Verified" : "Allowlisted"}</span>
+          `;
+          container.appendChild(el);
+        }
+      } catch (err) {
+        container.innerHTML = `<div style="font-size:12px; color:var(--danger)">Failed loading manifest: ${err.message}</div>`;
+      }
+    }
+
+    // 3. Submit Workflow
+    document.getElementById("btn-submit").onclick = async () => {
+      const fileInput = document.getElementById("workflow-file");
+      if (!fileInput.files[0]) {
+        alert("Please select a ComfyUI workflow JSON file.");
+        return;
+      }
+
+      try {
+        const text = await fileInput.files[0].text();
+        const json = JSON.parse(text);
+        const workflow = json.prompt || json.workflow || json;
+
+        log("Submitting workflow to RunPod Serverless...");
+        const res = await apiRequest("/api/run", {
           method: "POST",
-          body: JSON.stringify({ workflow })
+          body: JSON.stringify({ workflow }),
         });
 
-        jobId = data.id;
-        result.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        result.textContent = error.message;
+        activeJobId = res.id;
+        jobIdEl.value = activeJobId;
+        log({ message: "Job accepted by RunPod", jobId: activeJobId, status: res.status });
+
+        document.getElementById("btn-cancel").style.display = "inline-block";
+        startPolling();
+      } catch (err) {
+        log(`Submission error: ${err.message}`);
       }
     };
 
-    document.getElementById("check").onclick = async () => {
+    // 4. Polling & Status
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        if (!activeJobId) return;
+        try {
+          const statusData = await apiRequest(`/api/status/${activeJobId}`);
+          log({ jobId: activeJobId, status: statusData.status, executionTime: statusData.executionTime });
+
+          if (statusData.status === "COMPLETED") {
+            clearInterval(pollInterval);
+            document.getElementById("btn-cancel").style.display = "none";
+            log("Job COMPLETED successfully!");
+            renderOutputs(statusData.output?.images);
+          } else if (statusData.status === "FAILED" || statusData.status === "CANCELLED") {
+            clearInterval(pollInterval);
+            document.getElementById("btn-cancel").style.display = "none";
+            log(`Job ${statusData.status}: ${statusData.error || "Execution halted"}`);
+          }
+        } catch (e) {
+          console.warn("Poll failed", e);
+        }
+      }, 2000);
+    }
+
+    document.getElementById("btn-poll").onclick = async () => {
+      if (!activeJobId) {
+        alert("No active job to poll.");
+        return;
+      }
       try {
-        if (!jobId) throw new Error("Submit a job first.");
-
-        const data = await request(
-          "/api/status/" + encodeURIComponent(jobId)
-        );
-
-        result.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        result.textContent = error.message;
+        const data = await apiRequest(`/api/status/${activeJobId}`);
+        log(data);
+      } catch (err) {
+        log(`Status poll error: ${err.message}`);
       }
     };
+
+    // 5. Cancel Job
+    document.getElementById("btn-cancel").onclick = async () => {
+      if (!activeJobId) return;
+      try {
+        await apiRequest(`/api/cancel/${activeJobId}`, { method: "POST" });
+        log(`Cancellation sent for job ${activeJobId}`);
+        clearInterval(pollInterval);
+      } catch (err) {
+        log(`Cancellation error: ${err.message}`);
+      }
+    };
+
+    function renderOutputs(outputData) {
+      galleryEl.innerHTML = "";
+      if (!outputData) return;
+
+      const token = tokenEl.value.trim();
+      const tokenParam = token ? `&token=${encodeURIComponent(token)}` : "";
+
+      // Handle array of images or comfy format
+      let imageList = [];
+      if (Array.isArray(outputData)) {
+        imageList = outputData;
+      } else if (typeof outputData === "object") {
+        for (const k of Object.keys(outputData)) {
+          if (outputData[k].images) imageList.push(...outputData[k].images);
+        }
+      }
+
+      for (const img of imageList) {
+        const fname = img.filename;
+        if (!fname) continue;
+        const viewUrl = `/view?filename=${encodeURIComponent(fname)}${tokenParam}`;
+
+        const isVideo = fname.endsWith(".mp4") || fname.endsWith(".webm") || img.format === "video";
+        if (isVideo) {
+          const vid = document.createElement("video");
+          vid.src = viewUrl;
+          vid.controls = true;
+          vid.autoplay = true;
+          vid.loop = true;
+          galleryEl.appendChild(vid);
+        } else {
+          const imageEl = document.createElement("img");
+          imageEl.src = viewUrl;
+          imageEl.alt = fname;
+          galleryEl.appendChild(imageEl);
+        }
+      }
+    }
+
+    document.getElementById("btn-health").onclick = checkHealth;
+
+    // Check health on initial page load
+    checkHealth();
   </script>
 </body>
 </html>

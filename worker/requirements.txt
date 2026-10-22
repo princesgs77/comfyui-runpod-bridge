@@ -1,0 +1,4 @@
+google-auth>=2.20.0
+requests>=2.31.0
+runpod>=1.7.0
+websocket-client>=1.6.0

@@ -1,0 +1,137 @@
+{
+  "KSampler": {
+    "input": {
+      "required": {
+        "model": ["MODEL"],
+        "seed": ["INT", {"default": 0, "min": 0, "max": 18446744073709551615}],
+        "steps": ["INT", {"default": 20, "min": 1, "max": 10000}],
+        "cfg": ["FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "step": 0.1}],
+        "sampler_name": [["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral", "lms", "dpm_fast", "dpm_adaptive", "dpmpp_2s_ancestral", "dpmpp_sde", "dpmpp_2m", "ddim", "uni_pc"]],
+        "scheduler": [["normal", "karras", "exponential", "sgm_uniform", "simple", "ddim_uniform"]],
+        "positive": ["CONDITIONING"],
+        "negative": ["CONDITIONING"],
+        "latent_image": ["LATENT"],
+        "denoise": ["FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}]
+      }
+    },
+    "output": ["LATENT"],
+    "output_is_list": [false],
+    "output_name": ["LATENT"],
+    "name": "KSampler",
+    "display_name": "KSampler",
+    "category": "sampling"
+  },
+  "CheckpointLoaderSimple": {
+    "input": {
+      "required": {
+        "ckpt_name": [["v1-5-pruned-emaonly.safetensors", "sd_xl_base_1.0.safetensors"]]
+      }
+    },
+    "output": ["MODEL", "CLIP", "VAE"],
+    "output_is_list": [false, false, false],
+    "output_name": ["MODEL", "CLIP", "VAE"],
+    "name": "CheckpointLoaderSimple",
+    "display_name": "Load Checkpoint",
+    "category": "loaders"
+  },
+  "EmptyLatentImage": {
+    "input": {
+      "required": {
+        "width": ["INT", {"default": 512, "min": 16, "max": 8192, "step": 8}],
+        "height": ["INT", {"default": 512, "min": 16, "max": 8192, "step": 8}],
+        "batch_size": ["INT", {"default": 1, "min": 1, "max": 4096}]
+      }
+    },
+    "output": ["LATENT"],
+    "output_is_list": [false],
+    "output_name": ["LATENT"],
+    "name": "EmptyLatentImage",
+    "display_name": "Empty Latent Image",
+    "category": "latent"
+  },
+  "CLIPTextEncode": {
+    "input": {
+      "required": {
+        "text": ["STRING", {"multiline": true, "dynamicPrompts": true, "default": ""}],
+        "clip": ["CLIP"]
+      }
+    },
+    "output": ["CONDITIONING"],
+    "output_is_list": [false],
+    "output_name": ["CONDITIONING"],
+    "name": "CLIPTextEncode",
+    "display_name": "CLIP Text Encode (Prompt)",
+    "category": "conditioning"
+  },
+  "VAEDecode": {
+    "input": {
+      "required": {
+        "samples": ["LATENT"],
+        "vae": ["VAE"]
+      }
+    },
+    "output": ["IMAGE"],
+    "output_is_list": [false],
+    "output_name": ["IMAGE"],
+    "name": "VAEDecode",
+    "display_name": "VAE Decode",
+    "category": "latent"
+  },
+  "SaveImage": {
+    "input": {
+      "required": {
+        "images": ["IMAGE"],
+        "filename_prefix": ["STRING", {"default": "ComfyUI"}]
+      }
+    },
+    "output": [],
+    "output_is_list": [],
+    "output_name": [],
+    "name": "SaveImage",
+    "display_name": "Save Image",
+    "category": "image"
+  },
+  "LoadImage": {
+    "input": {
+      "required": {
+        "image": [["example.png"]]
+      }
+    },
+    "output": ["IMAGE", "MASK"],
+    "output_is_list": [false, false],
+    "output_name": ["IMAGE", "MASK"],
+    "name": "LoadImage",
+    "display_name": "Load Image",
+    "category": "image"
+  },
+  "LoraLoader": {
+    "input": {
+      "required": {
+        "model": ["MODEL"],
+        "clip": ["CLIP"],
+        "lora_name": [["lcm-lora-sdv1-5.safetensors"]],
+        "strength_model": ["FLOAT", {"default": 1.0, "min": -20.0, "max": 20.0, "step": 0.01}],
+        "strength_clip": ["FLOAT", {"default": 1.0, "min": -20.0, "max": 20.0, "step": 0.01}]
+      }
+    },
+    "output": ["MODEL", "CLIP"],
+    "output_is_list": [false, false],
+    "output_name": ["MODEL", "CLIP"],
+    "name": "LoraLoader",
+    "display_name": "Load LoRA",
+    "category": "loaders"
+  },
+  "VAELoader": {
+    "input": {
+      "required": {
+        "vae_name": [["vae-ft-mse-840000-ema-pruned.safetensors", "sdxl_vae.safetensors"]]
+      }
+    },
+    "output": ["VAE"],
+    "output_is_list": [false],
+    "output_name": ["VAE"],
+    "name": "VAELoader",
+    "display_name": "Load VAE",
+    "category": "loaders"
+  }
+}

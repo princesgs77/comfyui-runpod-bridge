@@ -1,0 +1,86 @@
+{
+  "version": "1.0.0",
+  "description": "Allowlisted Google Drive model registry for ComfyUI RunPod Serverless worker.",
+  "models": [
+    {
+      "model_id": "checkpoints/v1-5-pruned-emaonly.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID1",
+      "category": "checkpoints",
+      "dest_rel_path": "models/checkpoints",
+      "filename": "v1-5-pruned-emaonly.safetensors",
+      "file_size": 4265147572,
+      "expected_sha256": "cc6c52bb9799a46d46e85712297f0d08e1784340905cd08a59700e7559217e1b",
+      "description": "Stable Diffusion 1.5 standard pruned checkpoint"
+    },
+    {
+      "model_id": "checkpoints/sd_xl_base_1.0.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID2",
+      "category": "checkpoints",
+      "dest_rel_path": "models/checkpoints",
+      "filename": "sd_xl_base_1.0.safetensors",
+      "file_size": 6938078334,
+      "expected_sha256": "31e35c80fc4829d14f90153f4ef7001f40523b1078680f50474f9ed37773a5d4",
+      "description": "SDXL Base 1.0 checkpoint"
+    },
+    {
+      "model_id": "vae/vae-ft-mse-840000-ema-pruned.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID3",
+      "category": "vae",
+      "dest_rel_path": "models/vae",
+      "filename": "vae-ft-mse-840000-ema-pruned.safetensors",
+      "file_size": 334637770,
+      "expected_sha256": "735e4c3a4473b53587265f89349f5f6373b51b3c7b28b789e900c436b761a6c4",
+      "description": "SD1.5 fine-tuned MSE VAE"
+    },
+    {
+      "model_id": "vae/sdxl_vae.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID4",
+      "category": "vae",
+      "dest_rel_path": "models/vae",
+      "filename": "sdxl_vae.safetensors",
+      "file_size": 334638592,
+      "expected_sha256": "235745af67e163b27b3fa5c9ec62d7c07b46182c0b89b434ba5b3e944719bb84",
+      "description": "Official SDXL VAE"
+    },
+    {
+      "model_id": "loras/lcm-lora-sdv1-5.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID5",
+      "category": "loras",
+      "dest_rel_path": "models/loras",
+      "filename": "lcm-lora-sdv1-5.safetensors",
+      "file_size": 135400964,
+      "expected_sha256": "16531f9ffea55610ec87574347525f6e80b4e0586e24177b4ba7efc89d71c856",
+      "description": "Latent Consistency Model fast generation LoRA for SD1.5"
+    },
+    {
+      "model_id": "text_encoders/t5xxl_fp8_e4m3fn.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID6",
+      "category": "text_encoders",
+      "dest_rel_path": "models/text_encoders",
+      "filename": "t5xxl_fp8_e4m3fn.safetensors",
+      "file_size": 4894371840,
+      "expected_sha256": "4b55c68b73f27f87bf4c77ea1c2a05cf61d564fa7e88b64a27ffb43c683b5cf2",
+      "description": "FLUX / SD3 T5-XXL FP8 text encoder"
+    },
+    {
+      "model_id": "upscale_models/RealESRGAN_x4plus.pth",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID7",
+      "category": "upscale_models",
+      "dest_rel_path": "models/upscale_models",
+      "filename": "RealESRGAN_x4plus.pth",
+      "file_size": 67021671,
+      "expected_sha256": "4020a5cd05574c8b25be91b157433c2f0d984cfb728cd8286940d993952d7e82",
+      "description": "RealESRGAN 4x general photo upscaler"
+    },
+    {
+      "model_id": "controlnet/control_v11p_sd15_canny.safetensors",
+      "gdrive_file_id": "1A2B3C4D5E6F7G8H9I0J_EXAMPLE_ID8",
+      "category": "controlnet",
+      "dest_rel_path": "models/controlnet",
+      "filename": "control_v11p_sd15_canny.safetensors",
+      "file_size": 1450000000,
+      "expected_sha256": "63a8323a6c4b281f6d33a7e0d37e6f88ec8511be07dd43b599723ec0970db1f8",
+      "description": "ControlNet 1.1 Canny edge detector for SD1.5"
+    }
+  ]
+}
