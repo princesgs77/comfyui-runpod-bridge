@@ -59,7 +59,9 @@ jobs:
         with:
           context: ./worker
           file: ./worker/Dockerfile
+          platforms: linux/amd64
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/comfyui-runpod-worker:candidate-${{ github.sha }}
-          provenance: true
-          sbom: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/comfyui-runpod-worker:candidate-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/comfyui-runpod-worker:latest
+          provenance: false
