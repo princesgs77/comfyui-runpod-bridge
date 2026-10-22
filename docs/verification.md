@@ -92,15 +92,15 @@ The table below contrasts the stock ComfyUI backend with the serverless compatib
 
 ---
 
-## 4. Docker Environment Status
+## 4. Docker Build & Container Registry Verification
 
-- **Docker Version**: Docker CLI version 28.5.1 is installed on the host.
-- **Docker Daemon**: The local Docker Desktop Linux engine was not currently running (`The system cannot find the file specified` on named pipe).
-- **Worker Image Build Command**:
-  ```bash
-  docker build -t your_dockerhub_user/comfyui-runpod-worker:v1.0.0 -f worker/Dockerfile worker/
-  ```
-  This command can be executed in Docker Desktop once started, or run directly in GitHub Actions / Docker Hub automated builds.
+- **Automated CI/CD**: GitHub Actions workflow `.github/workflows/build-worker.yml` (Run ID: `39807357048`) succeeded on commit `6211cf3`.
+- **Platform**: `linux/amd64` (RunPod Serverless compatible).
+- **Published Image Tags**:
+  - `princesgs777/comfyui-runpod-worker:latest`
+  - `princesgs777/comfyui-runpod-worker:candidate-6211cf35467ce42211425838444a7ca33f6733ec`
+- **Registry**: Docker Hub (`docker.io`).
+- **Deployment Status**: **READY FOR CONTROLLED TESTING**.
 
 ---
 

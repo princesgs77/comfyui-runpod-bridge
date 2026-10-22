@@ -87,7 +87,7 @@ RUN comfy-node-install ComfyUI-Impact-Pack ComfyUI-ControlNet-Aux
 1. Log into your [RunPod Console](https://www.runpod.io/console/serverless).
 2. Go to **Serverless > Templates > New Template**:
    - **Template Name**: `comfyui-gdrive-worker`
-   - **Container Image**: `your_dockerhub_user/comfyui-runpod-worker:v1.0.0`
+   - **Container Image**: `princesgs777/comfyui-runpod-worker:latest` (or `princesgs777/comfyui-runpod-worker:candidate-6211cf35467ce42211425838444a7ca33f6733ec`)
    - **Container Disk**: Set to **40 GB** or **50 GB** (gives ample room to cache models).
    - **Environment Variables**:
      - `GDRIVE_SERVICE_ACCOUNT_JSON`: Paste the entire minified JSON string of your Google Service Account key file.
